@@ -33,6 +33,11 @@ var (
 	keyvalues      []string
 	pinned         string
 	id             string
+	cid            string
+	baseURL        string
+	vectorize      bool
+	queryText      string
+	topK           uint
 
 	ids pinningcli.PinningIdentifiers
 
@@ -45,6 +50,9 @@ var (
 )
 
 func prepare() {
+	if baseURL != "" {
+		pinningcli.SetBaseURL(baseURL)
+	}
 	sourceCredentials()
 }
 
@@ -104,4 +112,8 @@ func parseKeyValues(keyvalues []string) (datatypes.JSON, []error) {
 
 func Execute() error {
 	return rootCmd.Execute()
+}
+
+func init() {
+	rootCmd.PersistentFlags().StringVarP(&baseURL, "base-url", "", "", "Pinning service API base URL, for example http://localhost:8000/api")
 }

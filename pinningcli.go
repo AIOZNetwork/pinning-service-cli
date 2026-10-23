@@ -70,3 +70,18 @@ func (PinningCli *PinningCli) TestAuthentication(ids PinningIdentifiers) (TestAu
 	result, errs := PinningCli.Pinning.testAuthentication(ids)
 	return result, errs
 }
+
+func (PinningCli *PinningCli) VectorizeFile(ids PinningIdentifiers, criteria VectorizeFileCriteria) (VectorizeFileResult, []error) {
+	result, errs := PinningCli.Pinning.vectorizeFile(ids, criteria)
+	return result, errs
+}
+
+func (PinningCli *PinningCli) DeleteVectorizedFile(ids PinningIdentifiers, criteria DeleteVectorizedFileCriteria) (DeleteVectorizedFileResult, []error) {
+	result, errs := PinningCli.Pinning.deleteVectorizedFile(ids, criteria)
+	return result, errs
+}
+
+func (PinningCli *PinningCli) QueryVectors(ids PinningIdentifiers, criteria QueryVectorsCriteria) (QueryVectorsResult, []error) {
+	result, errs := PinningCli.Pinning.queryVectors(ids, criteria)
+	return result, errs
+}

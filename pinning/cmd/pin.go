@@ -38,9 +38,10 @@ var (
 			var result interface{}
 			if file != "" {
 				criteria := pinningcli.PinFileCriteria{
-					File:              file,
-					Name:              name,
-					KeyValues:         keyvalues,
+					File:      file,
+					Name:      name,
+					KeyValues: keyvalues,
+					Vectorize: vectorize,
 				}
 				result, errs = pinning.PinFile(ids, criteria)
 			} else {
@@ -48,6 +49,7 @@ var (
 					HashToPin: hash,
 					Name:      name,
 					KeyValues: keyvalues,
+					Vectorize: vectorize,
 				}
 				result, errs = pinning.PinByHash(ids, criteria)
 			}
@@ -78,5 +80,6 @@ func init() {
 	pinCmd.Flags().StringVarP(&file, "file", "", "", "File or directory to pin to IPFS")
 	pinCmd.Flags().StringVarP(&name, "name", "", "", "A name for this hash, for display in Pinning only")
 	pinCmd.Flags().StringArrayVarP(&keyvalues, "keyvalue", "", nil, "Additional key/value to store in Pinning")
+	pinCmd.Flags().BoolVarP(&vectorize, "vectorize", "", false, "Vectorize supported text files after pinning")
 	rootCmd.AddCommand(pinCmd)
 }

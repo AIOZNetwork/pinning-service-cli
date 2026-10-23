@@ -12,8 +12,15 @@ import (
 )
 
 type pinByHashRequest struct {
-	HashToPin string    `json:"hash_to_pin"`
-	Metadata  *Metadata `json:"metadata,omitempty"`
+	HashToPin  string            `json:"hash_to_pin"`
+	Metadata   *Metadata         `json:"metadata,omitempty"`
+	PinOptions *pinByHashOptions `json:"pin_options,omitempty"`
+}
+
+type pinByHashOptions struct {
+	CIDVersion        string `json:"cid_version,omitempty"`
+	WrapWithDirectory bool   `json:"wrap_with_directory"`
+	Vectorize         bool   `json:"vectorize,omitempty"`
 }
 
 type pinByHashResult struct {
@@ -22,9 +29,12 @@ type pinByHashResult struct {
 }
 
 type PinByHashCriteria struct {
-	HashToPin string
-	Name      string
-	KeyValues datatypes.JSON
+	HashToPin         string
+	CIDVersion        string
+	WrapWithDirectory bool
+	Name              string
+	KeyValues         datatypes.JSON
+	Vectorize         bool
 }
 
 func (criteria PinByHashCriteria) String() string {
@@ -38,6 +48,13 @@ func (pinning Pinning) buildPinByHashRequest(criteria PinByHashCriteria) pinByHa
 			Name:      criteria.Name,
 			KeyValues: criteria.KeyValues,
 		},
+	}
+	if criteria.CIDVersion != "" || criteria.WrapWithDirectory || criteria.Vectorize {
+		request.PinOptions = &pinByHashOptions{
+			CIDVersion:        criteria.CIDVersion,
+			WrapWithDirectory: criteria.WrapWithDirectory,
+			Vectorize:         criteria.Vectorize,
+		}
 	}
 
 	return request

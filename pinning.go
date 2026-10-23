@@ -8,7 +8,7 @@ import (
 
 var (
 	offset = uint(0)
-	limit = uint(10)
+	limit  = uint(10)
 )
 
 var httpClient *http.Client
