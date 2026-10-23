@@ -37,6 +37,13 @@ type PinFileCriteria struct {
 	WrapWithDirectory bool
 	Name              string
 	KeyValues         datatypes.JSON
+	Vectorize         bool
+}
+
+type pinFileOptions struct {
+	CIDVersion        string `json:"cid_version,omitempty"`
+	WrapWithDirectory bool   `json:"wrap_with_directory"`
+	Vectorize         bool   `json:"vectorize,omitempty"`
 }
 
 func (result pinFileResult) String() string {
@@ -49,10 +56,12 @@ func (result Pin) String() string {
 		result.CID, result.Size, result.DatePinned)
 }
 
-func (pinning Pinning) writeAllContent(input string, metadata *Metadata) (*io.PipeReader, *string, []error) {
+func (pinning Pinning) writeAllContent(input string, metadata *Metadata, options *pinFileOptions) (*io.PipeReader, *string, []error) {
 
 	metadataBytes, err := json.Marshal(metadata)
 	metadataStr := string(metadataBytes)
+	optionsBytes, err := json.Marshal(options)
+	optionsStr := string(optionsBytes)
 
 	stats, err := os.Stat(input)
 	if os.IsNotExist(err) {
@@ -116,6 +125,9 @@ func (pinning Pinning) writeAllContent(input string, metadata *Metadata) (*io.Pi
 		if metadata != nil {
 			err = m.WriteField("metadata", metadataStr)
 		}
+		if options != nil {
+			err = m.WriteField("options", optionsStr)
+		}
 
 	}()
 
@@ -137,7 +149,16 @@ func (pinning Pinning) pinFile(ids PinningIdentifiers, criteria PinFileCriteria)
 
 	pinningMetadata := pinning.buildPinningMetadata(unionCriteria)
 
-	reader, boundary, errs := pinning.writeAllContent(criteria.File, pinningMetadata)
+	var pinOptions *pinFileOptions
+	if criteria.CIDVersion != "" || criteria.WrapWithDirectory || criteria.Vectorize {
+		pinOptions = &pinFileOptions{
+			CIDVersion:        criteria.CIDVersion,
+			WrapWithDirectory: criteria.WrapWithDirectory,
+			Vectorize:         criteria.Vectorize,
+		}
+	}
+
+	reader, boundary, errs := pinning.writeAllContent(criteria.File, pinningMetadata, pinOptions)
 	if errs != nil {
 		return result, append([]error{fmt.Errorf("failed to prepare content")}, errs...)
 	}
@@ -168,7 +189,7 @@ func (pinning Pinning) pinFile(ids PinningIdentifiers, criteria PinFileCriteria)
 	log.Trace("Status code: ", resp.Status)
 	log.Trace("Response body: ", string(body))
 
-	if resp.StatusCode != 201 {
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
 		return result, []error{fmt.Errorf("error while calling Pinning server with POST at %s", query),
 			fmt.Errorf("status code: %s", resp.Status),
 			fmt.Errorf("response body: %s", string(body)),
